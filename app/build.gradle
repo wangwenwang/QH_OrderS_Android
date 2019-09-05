@@ -2,6 +2,22 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
+    signingConfigs {
+
+        release {
+            storeFile file('../QH_Order.jks')
+            storePassword "kdypwd"
+            keyAlias "QH_Order"
+            keyPassword "kdypwd"
+        }
+        debug {
+            storeFile file('../QH_Order.jks')
+            storePassword "kdypwd"
+            keyAlias "QH_Order"
+            keyPassword "kdypwd"
+        }
+    }
+
     defaultConfig {
         applicationId "com.kaidongyuan.qh_orders_android"
         minSdkVersion 14
