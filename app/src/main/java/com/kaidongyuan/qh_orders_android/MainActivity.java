@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
@@ -53,6 +54,9 @@ import com.kaidongyuan.qh_orders_android.Tools.Constants;
 import com.kaidongyuan.qh_orders_android.Tools.LocationApplication;
 import com.kaidongyuan.qh_orders_android.Tools.MPermissionsUtil;
 import com.kaidongyuan.qh_orders_android.Tools.Tools;
+import com.tencent.mm.opensdk.modelmsg.SendAuth;
+import com.tencent.mm.opensdk.openapi.IWXAPI;
+import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import org.json.JSONObject;
 
@@ -88,10 +92,11 @@ public class MainActivity extends Activity {
 
     public static String mAppVersion;
 
-    // 微信开放平台APP_ID
-    private static final String APP_ID = "";
 
-//    static public IWXAPI mWxApi;
+    // 微信开放平台APP_ID
+    private static final String APP_ID = Constants.WXLogin_AppID;
+
+    static public IWXAPI mWxApi;
 
     public final static String DestFileName = "kdy-qh.apk";
     public final static String ZipFileName = "dist.zip";
@@ -126,6 +131,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // 修复targetSdkVersion为28时，拍照闪退问题
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy( builder.build());
+        }
 
         mContext = this;
         Log.d("LM", "程序启动");
@@ -277,6 +288,16 @@ public class MainActivity extends Activity {
         mWebView.setDrawingCacheEnabled(true);
 
         initPermission();
+
+        // 注册微信登录
+        registToWX();
+    }
+
+    private void registToWX() {
+        //AppConst.WEIXIN.APP_ID是指你应用在微信开放平台上的AppID，记得替换。
+        mWxApi = WXAPIFactory.createWXAPI(this, APP_ID, false);
+        // 将该app注册到微信
+        mWxApi.registerApp(APP_ID);
     }
 
     private void initPermission() {
@@ -755,17 +776,17 @@ public class MainActivity extends Activity {
                 new Thread() {
                     public void run() {
 
-//                        if (!mWxApi.isWXAppInstalled()) {
-//                            Log.d("LM", "您还未安装微信客户端");
-//                            return;
-//                        } else {
-//                            Log.d("LM", "微信客户端已安装");
-//                        }
-//                        SendAuth.Req req = new SendAuth.Req();
-//                        req.scope = "snsapi_userinfo";//官方固定写法
-//                        req.state = "wechat_sdk_tms";//自定义一个字串
-//
-//                        mWxApi.sendReq(req);
+                        if (!mWxApi.isWXAppInstalled()) {
+                            Log.d("LM", "您还未安装微信客户端");
+                            return;
+                        } else {
+                            Log.d("LM", "微信客户端已安装");
+                        }
+                        SendAuth.Req req = new SendAuth.Req();
+                        req.scope = "snsapi_userinfo";//官方固定写法
+                        req.state = "wechat_sdk_tms";//自定义一个字串
+
+                        mWxApi.sendReq(req);
                     }
                 }.start();
             } else if (exceName.equals("登录页面已加载")) {

@@ -123,6 +123,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name="com.kaidongyuan.qh_orders_android.wxapi.WXEntryActivity" android:exported="true" />
+
     </application>
 
 </manifest>
