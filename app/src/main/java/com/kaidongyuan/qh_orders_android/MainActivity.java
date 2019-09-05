@@ -856,6 +856,11 @@ public class MainActivity extends Activity {
 //                    }
 //                }.start();
             }
+            // 服务器地址
+            else if(exceName.equals("服务器地址")) {
+
+                Tools.setServerAddress(mContext, inputName);
+            }
         }
 
         @JavascriptInterface

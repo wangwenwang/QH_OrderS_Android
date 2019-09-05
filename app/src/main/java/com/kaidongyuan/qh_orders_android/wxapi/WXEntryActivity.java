@@ -166,7 +166,8 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 
         String params = "{\"wxOpenid\":\"" + openid + "\"}";
         String paramsEncoding = URLEncoder.encode(params);
-        String Strurl = Constants.URL.SAAS_API_BASE + "login.do?params=" + paramsEncoding;
+        String Strurl = Tools.getServerAddress(MainActivity.mContext) + "login.do?params=" + paramsEncoding;
+        Log.d("LM", "登录链接: " + Strurl);
 
         HttpURLConnection conn=null;
         try {

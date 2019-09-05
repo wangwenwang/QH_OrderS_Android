@@ -26,6 +26,28 @@ import static android.widget.Toast.LENGTH_LONG;
 public class Tools {
 
     /**
+     * 记住服务器地址
+     * @param mContext 上下文
+     * @throws Exception
+     */
+    public static void setServerAddress(Context mContext, String apiUrl) {
+
+        SharedPreferences pre_appinfo = mContext.getSharedPreferences("w_AppInfo", MODE_MULTI_PROCESS);
+        pre_appinfo.edit().putString("ServerAddress", apiUrl).commit();
+    }
+
+    /**
+     * 取服务器地址
+     * @param mContext 上下文
+     * @return
+     */
+    public static String getServerAddress(Context mContext) {
+
+        SharedPreferences pre_appinfo = mContext.getSharedPreferences("w_AppInfo", MODE_MULTI_PROCESS);
+        return pre_appinfo.getString("ServerAddress", "");
+    }
+
+    /**
      * 获取版本号名称
      *
      * @param context 上下文
