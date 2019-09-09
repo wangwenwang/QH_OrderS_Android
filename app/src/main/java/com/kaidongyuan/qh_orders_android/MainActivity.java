@@ -31,6 +31,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.alibaba.fastjson.JSON;
+import com.allenliu.versionchecklib.v2.AllenVersionChecker;
+import com.allenliu.versionchecklib.v2.builder.UIData;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -57,6 +59,7 @@ import com.kaidongyuan.qh_orders_android.Tools.Tools;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
+import com.vector.update_app.UpdateAppManager;
 
 import org.json.JSONObject;
 
@@ -90,6 +93,7 @@ public class MainActivity extends Activity {
 
     double lat;
 
+    // APP当前版本号
     public static String mAppVersion;
 
 
@@ -151,12 +155,13 @@ public class MainActivity extends Activity {
 
         unZipOutPath = "/data/data/" + getPackageName() + "/upzip/";
 
-        // 设置ZIP版本号
+        // 首次安装APP，设置ZIP版本号
         String curr_zip_version = Tools.getAppZipVersion(mContext);
         if (curr_zip_version != null && curr_zip_version.equals("")) {
 
             Tools.setAppZipVersion(mContext, CURR_ZIP_VERSION);
         }
+
         curr_zip_version = Tools.getAppZipVersion(mContext);
         Log.d("LM", "本地zip版本号：： " + curr_zip_version);
 
@@ -881,100 +886,100 @@ public class MainActivity extends Activity {
     }
 
     public void checkVersion(String who) {
-        return;
-//        this.WhoCheckVersion = who;
-//
-//        if (mRequestQueue == null) {
-//            mRequestQueue = Volley.newRequestQueue(this.getApplicationContext());
-//
-//        }
-//
-//        Log.d("LM", "检查apk及zip版本");
-//        Map<String, String> params = new HashMap<>();
-//        params.put("params", "{\"tenantCode\":\"KDY\"}");
-////        mClient.sendRequest(Constants.URL.SAAS_API_BASE + "queryAppVersion.do", params, TAG_CHECKVERSION);
-//
-//
-//        StringRequest mStringRequest = new StringRequest(Request.Method.POST,
-//                "http://192.168.20.113:8880/cyscm/easyToSell/queryAppVersion.do?params={\"tenantCode\":\"KDY\"}", new Response.Listener<String>() {
-//            @Override
-//            public void onResponse(String response) {
-//
-//                Log.d("LM", "checkVersion1: ");
-////                com.alibaba.fastjson.JSONObject jo = JSON.parseObject(response);
-////                int type = Integer.parseInt(jo.getString("type"));
-//
+
+        this.WhoCheckVersion = who;
+
+        if (mRequestQueue == null) {
+            mRequestQueue = Volley.newRequestQueue(this.getApplicationContext());
+
+        }
+
+        Log.d("LM", "检查apk及zip版本");
+        Map<String, String> params = new HashMap<>();
+        params.put("params", "{\"tenantCode\":\"KDY\"}");
+//        mClient.sendRequest(Constants.URL.SAAS_API_BASE + "queryAppVersion.do", params, TAG_CHECKVERSION);
+
+
+        StringRequest mStringRequest = new StringRequest(Request.Method.POST,
+                Tools.getServerAddress(MainActivity.mContext) + "queryAppVersion.do?params={\"tenantCode\":\"KDY\"}", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                Log.d("LM", "checkVersion1: ");
 //                com.alibaba.fastjson.JSONObject jo = JSON.parseObject(response);
-//
-//                String status = jo.getString("status");
-//
-//                String apkDownloadUrl = null;
-//                String server_apkVersion = null;
-//                String zipDownloadUrl = null;
-//                String server_zipVersion = null;
-//                if (status.equals("1")) {
-//
-//                    com.alibaba.fastjson.JSONObject dict = jo.getJSONObject("data");
-//                    apkDownloadUrl = dict.getString("downloadUrl");
-//                    server_apkVersion = dict.getString("versionNo");
-//                    zipDownloadUrl = dict.getString("zipDownloadUrl");
-//                    server_zipVersion = dict.getString("zipVersionNo");
-//                }
-//
-//                if (server_apkVersion != null && apkDownloadUrl != null) {
-//                    try {
-//                        String current_apkVersion = mAppVersion;
-//                        Log.d("LM","server_apkVersion:" + server_apkVersion + "\tcurrent_apkVersion:" + current_apkVersion);
-//
-//                        int compareVersion = Tools.compareVersion(server_apkVersion, current_apkVersion);
-//                        if (compareVersion == 1) {
-//
-//                            createUpdateDialog(current_apkVersion, server_apkVersion, apkDownloadUrl);
-////                            minefragment.isupdate = true;
-//                        } else {
-//
-//                            Log.d("LM", "apk为最新版本");
-//
-//                            String curr_zipVersion = Tools.getAppZipVersion(mContext);
-//                            compareVersion = Tools.compareVersion(server_zipVersion, curr_zipVersion);
-//                            if (compareVersion == 1) {
-//
-//                                Log.d("LM", "服务器zip版本：" + server_zipVersion + "    " + "本地zip版本：" + CURR_ZIP_VERSION);
-//                                CURR_ZIP_VERSION = server_zipVersion;
-//                                Log.d("LM", "更新zip...");
-////                                showUpdataZipDialog(zipDownloadUrl);
-//                            } else {
-//
-//                                Log.d("LM", "zip为最新版本");
-//
-//                                if(WhoCheckVersion.equals("vue")) {
-//                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-//                                    builder.setTitle("");
-//                                    builder.setMessage("已经是最新版本！");
-//                                    builder.setPositiveButton("确定", null);
-//                                    builder.show();
-//                                }
-//                            }
-////                            checkGpsState();
-//                        }
-//                    } catch (Exception e) {
-//                        Log.d("LM", "NameNotFoundException" + e.getMessage());
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//            }
-//        }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//
-//                Log.d("LM", "checkVersion2: ");
-//                error.printStackTrace();
-//            }
-//        });
-//        mStringRequest.setRetryPolicy(new DefaultRetryPolicy(30*1000, 1, 1.0f));  // 设置超时
-//        mStringRequest.setTag("FJAKSLDFJ");
-//        mRequestQueue.add(mStringRequest);
+//                int type = Integer.parseInt(jo.getString("type"));
+
+                com.alibaba.fastjson.JSONObject jo = JSON.parseObject(response);
+
+                String status = jo.getString("status");
+
+                String apkDownloadUrl = null;
+                String server_apkVersion = null;
+                String zipDownloadUrl = null;
+                String server_zipVersion = null;
+                if (status.equals("1")) {
+
+                    com.alibaba.fastjson.JSONObject dict = jo.getJSONObject("data");
+                    apkDownloadUrl = dict.getString("downloadUrl");
+                    server_apkVersion = dict.getString("versionNo");
+                    zipDownloadUrl = dict.getString("zipDownloadUrl");
+                    server_zipVersion = dict.getString("zipVersionNo");
+                }
+
+                if (server_apkVersion != null && apkDownloadUrl != null) {
+                    try {
+                        String current_apkVersion = mAppVersion;
+                        Log.d("LM","server_apkVersion:" + server_apkVersion + "\tcurrent_apkVersion:" + current_apkVersion);
+
+                        int compareVersion = Tools.compareVersion(server_apkVersion, current_apkVersion);
+                        if (compareVersion == 1) {
+
+                            createUpdateDialog(current_apkVersion, server_apkVersion, apkDownloadUrl);
+//                            minefragment.isupdate = true;
+                        } else {
+
+                            Log.d("LM", "apk为最新版本");
+
+                            String curr_zipVersion = Tools.getAppZipVersion(mContext);
+                            compareVersion = Tools.compareVersion(server_zipVersion, curr_zipVersion);
+                            if (compareVersion == 1) {
+
+                                Log.d("LM", "服务器zip版本：" + server_zipVersion + "    " + "本地zip版本：" + CURR_ZIP_VERSION);
+                                CURR_ZIP_VERSION = server_zipVersion;
+                                Log.d("LM", "更新zip...");
+//                                showUpdataZipDialog(zipDownloadUrl);
+                            } else {
+
+                                Log.d("LM", "zip为最新版本");
+
+                                if(WhoCheckVersion.equals("vue")) {
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                    builder.setTitle("");
+                                    builder.setMessage("已经是最新版本！");
+                                    builder.setPositiveButton("确定", null);
+                                    builder.show();
+                                }
+                            }
+//                            checkGpsState();
+                        }
+                    } catch (Exception e) {
+                        Log.d("LM", "NameNotFoundException" + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                Log.d("LM", "checkVersion2: ");
+                error.printStackTrace();
+            }
+        });
+        mStringRequest.setRetryPolicy(new DefaultRetryPolicy(30*1000, 1, 1.0f));  // 设置超时
+        mStringRequest.setTag("FJAKSLDFJ");
+        mRequestQueue.add(mStringRequest);
     }
 
 
@@ -1004,8 +1009,13 @@ public class MainActivity extends Activity {
 
                     mUpdataVersionDialog.cancel();
                     Log.d("LM", "update.url:" + downUrl);
-                    //以存储文件名为Tag名
-//                    mClient.sendFileRequest(downUrl, DestFileName);
+
+                    AllenVersionChecker
+                            .getInstance()
+                            .downloadOnly(
+                                    UIData.create().setDownloadUrl(downUrl)
+                            )
+                            .executeMission(mContext);
                 }
             });
             mUpdataVersionDialog = builder.create();

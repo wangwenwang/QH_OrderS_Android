@@ -21,7 +21,7 @@ android {
     defaultConfig {
         applicationId "com.kaidongyuan.qh_orders_android"
         minSdkVersion 14
-        targetSdkVersion 28
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -54,4 +54,6 @@ dependencies {
     //微信登录
     compile 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:+'
     compile files('libs/json-simple-1.1.1.jar')
+    compile 'com.qianwen:update-app:3.5.2'
+    compile 'com.allenliu.versionchecklib:library:2.2.0'
 }
