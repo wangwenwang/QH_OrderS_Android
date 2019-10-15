@@ -349,22 +349,7 @@ public class MainActivity extends Activity {
 
     private void openImageChooserActivity() {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("拍照/相册");
-//        builder.setPositiveButton("相册", new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                takePhoto();
-//            }
-//        });
-        builder.setNegativeButton("拍照", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                takeCamera();
-            }
-        });
-        builder.setCancelable(false);
-        builder.show();
+        takeCamera();
     }
 
     //拍照
