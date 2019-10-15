@@ -56,4 +56,5 @@ dependencies {
     compile files('libs/json-simple-1.1.1.jar')
     compile 'com.qianwen:update-app:3.5.2'
     compile 'com.allenliu.versionchecklib:library:2.2.0'
+    compile 'com.baoyz.actionsheet:library:1.1.7'
 }

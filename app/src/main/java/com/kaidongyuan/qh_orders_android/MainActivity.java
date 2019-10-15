@@ -1,6 +1,7 @@
 package com.kaidongyuan.qh_orders_android;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,8 +17,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -29,11 +30,11 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.allenliu.versionchecklib.v2.AllenVersionChecker;
 import com.allenliu.versionchecklib.v2.builder.UIData;
-import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -45,34 +46,34 @@ import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.Poi;
 import com.baidu.location.service.LocationService;
-import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.search.core.SearchResult;
 import com.baidu.mapapi.search.geocode.GeoCodeResult;
-import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
-import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
+import com.baoyz.actionsheet.ActionSheet;
 import com.kaidongyuan.qh_orders_android.Tools.Constants;
 import com.kaidongyuan.qh_orders_android.Tools.LocationApplication;
 import com.kaidongyuan.qh_orders_android.Tools.MPermissionsUtil;
+import com.kaidongyuan.qh_orders_android.Tools.SystemUtil;
 import com.kaidongyuan.qh_orders_android.Tools.Tools;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
-import com.vector.update_app.UpdateAppManager;
-
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static android.widget.Toast.LENGTH_LONG;
 
-public class MainActivity extends Activity {
+
+public class MainActivity extends FragmentActivity implements
+        ActionSheet.ActionSheetListener {
 
     private final int SDK_PERMISSION_REQUEST = 127;
     private String permissionInfo;
@@ -807,24 +808,6 @@ public class MainActivity extends Activity {
 
                 Log.d("LM", "获取当前位置页面已加载");
                 locationService.start();
-            } else if (exceName.equals("导航")) {
-
-                Log.d("LM", "导航");
-
-                new Thread() {
-
-                    public void run() {
-
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-
-                                Tools.ToNavigation(inputName, mContext, appName);
-                            }
-                        });
-                    }
-                }.start();
             } else if (exceName.equals("查看路线")) {
 
                 Log.d("LM", "查看路线");
@@ -868,6 +851,126 @@ public class MainActivity extends Activity {
                 }
             }
         }
+
+        @JavascriptInterface
+        public void callAndroid(String exceName, String lng1, String lat1, String address1) {
+
+            Log.d("LM", "执行:" + exceName + "    " + "经度:" + lng + "    " + "纬度:" + lat + "    " + "地址:" + address);
+            lng = Double.valueOf(lng1).doubleValue();
+            lat = Double.valueOf(lat1).doubleValue();
+            address = address1;
+
+            if (exceName.equals("导航")) {
+
+                Log.d("LM", "导航");
+
+                new Thread() {
+
+                    public void run() {
+
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                List list = new ArrayList();
+                                if (SystemUtil.isInstalled(mContext, "com.autonavi.minimap")) {
+
+                                    list.add("高德地图");
+                                }
+                                if (SystemUtil.isInstalled(mContext, "com.baidu.BaiduMap")) {
+
+                                    list.add("百度地图");
+                                }
+
+                                if (list.size() == 2) {
+
+                                    ActionSheet.createBuilder(MainActivity.this, getSupportFragmentManager())
+                                            .setCancelButtonTitle("取消")
+                                            .setOtherButtonTitles("高德地图", "百度地图")
+                                            .setCancelableOnTouchOutside(true)
+                                            .setListener(MainActivity.this).show();
+                                } else if (list.size() == 1) {
+
+                                    if (list.get(0).equals("高德地图")) {
+
+                                        Log.d("LM", "调用高德地图");
+                                        minimap(mContext, lng, lat, address, appName);
+                                    } else if (list.get(0).equals("百度地图")) {
+
+                                        Log.d("LM", "调用百度地图");
+                                        BaiduMap(mContext, lng, lat, address, appName);
+                                    }
+                                } else {
+
+                                    Toast.makeText(mContext, "未检索到本机已安装‘百度地图’或‘高德地图’App", LENGTH_LONG).show();
+                                }
+                            }
+                        });
+                    }
+                }.start();
+            }
+        }
+    }
+
+
+    @SuppressLint("WrongConstant")
+    @Override
+    public void onOtherButtonClick(ActionSheet actionSheet, int index) {
+
+        if(index == 0) {
+
+            Log.d("LM", "调用高德地图");
+            minimap(mContext, lng, lat, address, appName);
+        }else if(index == 1) {
+
+            Log.d("LM", "调用百度地图");
+            BaiduMap(mContext, lng, lat, address, appName);
+        }
+    }
+
+    @Override
+    public void onDismiss(ActionSheet actionSheet, boolean isCancel) {
+
+    }
+
+    private static void BaiduMap(Context mContext, double lng, double lat, String address, String appName) {
+
+        //跳转到百度导航
+        try {
+            Intent baiduintent = Intent.parseUri("intent://map/direction?" +
+                    "origin=" + "" +
+                    "&destination=" + address +
+                    "&mode=driving" +
+                    "&src=Name|AppName" +
+                    "#Intent;scheme=bdapp;package=com.baidu.BaiduMap;end", 0);
+            mContext.startActivity(baiduintent);
+        } catch (URISyntaxException e) {
+            Log.d("LM", "URISyntaxException:" + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private static void minimap(Context mContext, double lng, double lat, String address, String appName) {
+        //跳转到高德导航
+        Intent autoIntent = new Intent();
+        try {
+            autoIntent.setData(Uri
+                    .parse("androidamap://route?" +
+                            "sourceApplication=" + appName +
+                            "&slat=" + "" +
+                            "&slon=" + "" +
+                            "&dlat=" + lat +
+                            "&dlon=" + lng +
+                            "&dname=" + address +
+                            "&dev=0" +
+                            "&m=2" +
+                            "&t=0"
+                    ));
+        } catch (Exception e) {
+            Log.i("LM", "高德地图异常" + e);
+        }
+        mContext.startActivity(autoIntent);
     }
 
     public void checkVersion(String who) {
