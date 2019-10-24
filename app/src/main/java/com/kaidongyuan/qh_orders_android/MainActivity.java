@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -59,9 +60,15 @@ import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -122,7 +129,7 @@ public class MainActivity extends FragmentActivity implements
     private Uri mImageUri;
     private static final String FILE_PROVIDER_AUTHORITY = "com.kaidongyuan.qh_orders_android.fileprovider";
 
-    private String CURR_ZIP_VERSION = "0.0.0";
+    private String CURR_ZIP_VERSION = "0.0.1";
     private String WhoCheckVersion;
 
     //检测版本更新
@@ -130,7 +137,6 @@ public class MainActivity extends FragmentActivity implements
 //    private OrderAsyncHttpClient mClient;
     private final int RequestPermission_STATUS_CODE0 = 8800;
     private RequestQueue mRequestQueue;
-    private AlertDialog mUpdataVersionDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -985,17 +991,11 @@ public class MainActivity extends FragmentActivity implements
         Log.d("LM", "检查apk及zip版本");
         Map<String, String> params = new HashMap<>();
         params.put("params", "{\"tenantCode\":\"KDY\"}");
-//        mClient.sendRequest(Constants.URL.SAAS_API_BASE + "queryAppVersion.do", params, TAG_CHECKVERSION);
-
 
         StringRequest mStringRequest = new StringRequest(Request.Method.POST,
                 Tools.getServerAddress(MainActivity.mContext) + "queryAppVersion.do?params={\"tenantCode\":\"KDY\"}", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-
-                Log.d("LM", "checkVersion1: ");
-//                com.alibaba.fastjson.JSONObject jo = JSON.parseObject(response);
-//                int type = Integer.parseInt(jo.getString("type"));
 
                 com.alibaba.fastjson.JSONObject jo = JSON.parseObject(response);
 
@@ -1023,7 +1023,6 @@ public class MainActivity extends FragmentActivity implements
                         if (compareVersion == 1) {
 
                             createUpdateDialog(current_apkVersion, server_apkVersion, apkDownloadUrl);
-//                            minefragment.isupdate = true;
                         } else {
 
                             Log.d("LM", "apk为最新版本");
@@ -1035,7 +1034,7 @@ public class MainActivity extends FragmentActivity implements
                                 Log.d("LM", "服务器zip版本：" + server_zipVersion + "    " + "本地zip版本：" + CURR_ZIP_VERSION);
                                 CURR_ZIP_VERSION = server_zipVersion;
                                 Log.d("LM", "更新zip...");
-//                                showUpdataZipDialog(zipDownloadUrl);
+                                showUpdataZipDialog(zipDownloadUrl);
                             } else {
 
                                 Log.d("LM", "zip为最新版本");
@@ -1055,13 +1054,12 @@ public class MainActivity extends FragmentActivity implements
                         e.printStackTrace();
                     }
                 }
-
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
 
-                Log.d("LM", "checkVersion2: ");
+                Log.d("LM", "检查版本接口|queryAppVersion.do|请求失败");
                 error.printStackTrace();
             }
         });
@@ -1070,6 +1068,88 @@ public class MainActivity extends FragmentActivity implements
         mRequestQueue.add(mStringRequest);
     }
 
+    /******************************************************** HTML版本更新功能 ********************************************************/
+    /**
+     * 弹出对话框
+     */
+    protected void showUpdataZipDialog(final String downUrl) {
+
+        downLoadZip(downUrl);
+    }
+
+    protected void downLoadZip(final String downUrl) {
+        //进度条
+        final ProgressDialog pd;
+        pd = new ProgressDialog(this);
+        pd.setCancelable(false);
+        pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        pd.setMessage("");
+        pd.show();
+        pd.setOnKeyListener(onKeyListener);
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    File file = Tools.getFileFromServer(downUrl, pd);
+                    Log.d("LM", "Zip下载完毕，地址：" + file.getPath());
+
+                    // 更新ZIP版本号
+                    Tools.setAppZipVersion(mContext, CURR_ZIP_VERSION);
+                    Log.d("LM", "zip更新成功，设置版本号为：" + CURR_ZIP_VERSION);
+
+                    Log.d("LM", "取出验证为：" + Tools.getAppZipVersion(mContext));
+
+
+                    try {
+                        Log.d("LM", "SD卡开始解压...");
+                        Tools.UnZipFolder("/storage/emulated/0/dist.zip", unZipOutPath);
+                        Log.d("LM", "SD卡完成解压...");
+                    } catch (Exception e) {
+                        Log.d("LM", "SD卡解压异常..." + e.getMessage());
+                        e.printStackTrace();
+                    }
+
+                    pd.dismiss(); //结束掉进度条对话框
+
+                    new Thread() {
+                        public void run() {
+
+                            for (int i = 0; i < 5; i++) {
+                                try {
+                                    sleep(1 * 300);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                Log.d("LM", "开始刷新HTML  " + i);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                        mWebView.reload();
+                                    }
+                                });
+                                Log.d("LM", "完成刷新HTML  " + i);
+                            }
+                        }
+                    }.start();
+                } catch (Exception e) {
+
+                    Log.d("", "run: ");
+                }
+            }
+        }.start();
+    }
+
+    // 下载进度时，点击屏幕不可取消
+    private DialogInterface.OnKeyListener onKeyListener = new DialogInterface.OnKeyListener() {
+        @Override
+        public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+
+            }
+            return false;
+        }
+    };
 
     /**
      * 版本更新对话框
@@ -1079,38 +1159,17 @@ public class MainActivity extends FragmentActivity implements
      * @param downUrl        最新版本安装包下载url
      */
     public void createUpdateDialog(String currentVersion, String version, final String downUrl) {
-        if (mUpdataVersionDialog == null) {
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setMessage("当前版本：" + currentVersion + "\n最新版本：" + version);
-            builder.setCancelable(false);
-            builder.setTitle("更新版本");
-            builder.setPositiveButton("取消", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    mUpdataVersionDialog.cancel();
-                }
-            });
-            builder.setNegativeButton("下载", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
-                    mUpdataVersionDialog.cancel();
-                    Log.d("LM", "update.url:" + downUrl);
-
-                    AllenVersionChecker
-                            .getInstance()
-                            .downloadOnly(
-                                    UIData.create().setDownloadUrl(downUrl)
-                            )
-                            .executeMission(mContext);
-                }
-            });
-            mUpdataVersionDialog = builder.create();
-        }
-        mUpdataVersionDialog.show();
+        AllenVersionChecker
+            .getInstance()
+            .downloadOnly(
+                UIData.create()
+                    .setDownloadUrl(downUrl)
+                    .setTitle("更新版本")
+                    .setContent("当前版本：" + currentVersion + "\n最新版本：" + version)
+            )
+            .executeMission(mContext);
     }
-
 
     /**
      * 返回上一页
@@ -1154,5 +1213,16 @@ public class MainActivity extends FragmentActivity implements
             Log.d("LM", "orgURL: " + orgURL);
         }
         return false;
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if(event.getKeyCode() == KeyEvent.KEYCODE_BACK ) {
+            //do something.
+            Toast.makeText(mContext, "请使用左上角的返回键", LENGTH_LONG).show();
+            return true;
+        }else {
+            return super.dispatchKeyEvent(event);
+        }
     }
 }

@@ -1,20 +1,26 @@
 package com.kaidongyuan.qh_orders_android.Tools;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.kaidongyuan.qh_orders_android.MainActivity;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -339,4 +345,52 @@ public class Tools {
         return  out.toString();
     }
 
+
+
+    /**
+     * 下载进度条
+     */
+    public static File getFileFromServer(String path, ProgressDialog pd) throws Exception{
+        //如果相等的话表示当前的sdcard挂载在手机上并且是可用的
+        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+            URL url = new URL(path);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            //获取到文件的大小
+            pd.setMax(conn.getContentLength() / 1000 / 1000);
+            InputStream is = conn.getInputStream();
+            File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), MainActivity.ZipFileName);
+            FileOutputStream fos = new FileOutputStream(file);
+            BufferedInputStream bis = new BufferedInputStream(is);
+            byte[] buffer = new byte[1024];
+            int len ;
+            int total=0;
+            while((len =bis.read(buffer))!=-1){
+                fos.write(buffer, 0, len);
+                total+= len;
+                //获取当前下载量
+                double progressD = total / 1000 / 1000.0;
+                String progressS = doubleToString(progressD);
+                pd.setProgress(total / 1000 / 1000);
+                pd.setProgressNumberFormat(progressS + "m");
+            }
+            fos.close();
+            bis.close();
+            is.close();
+            return file;
+        }
+        else{
+            return null;
+        }
+    }
+
+    /**
+     * double转String,保留小数点后一位
+     * @param num
+     * @return
+     */
+    public static String doubleToString(double num){
+        //使用0.0不足位补0，#.#仅保留有效位
+        return new DecimalFormat("0.0").format(num);
+    }
 }
