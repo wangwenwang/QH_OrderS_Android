@@ -60,6 +60,10 @@ import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -68,6 +72,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -75,6 +81,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import okhttp3.OkHttpClient;
 
 import static android.widget.Toast.LENGTH_LONG;
 
@@ -323,7 +331,12 @@ public class MainActivity extends FragmentActivity implements
                         new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}
                         , RequestPermission_STATUS_CODE0)) {
-                    checkVersion("原生");
+
+                    new Thread() {
+                        public void run() {
+                            checkVersion("原生");
+                        }
+                    }.start();
                 }else {
 
                     new Thread() {
@@ -345,7 +358,11 @@ public class MainActivity extends FragmentActivity implements
                 }
             } else {
 
-                checkVersion("原生");
+                new Thread() {
+                    public void run() {
+                        checkVersion("原生");
+                    }
+                }.start();
             }
         } catch (Exception e) {
 
@@ -743,16 +760,14 @@ public class MainActivity extends FragmentActivity implements
 
             Log.d("LM", "执行:" + exceName);
 
-            if (exceName.equals("检查版本更新")) {
-
-                // 开启定位服务
-                runOnUiThread(new Runnable() {
-                    @Override
+            if (exceName.equals("检查APP和VUE版本更新")) {
+                new Thread() {
                     public void run() {
 
                         checkVersion("vue");
+
                     }
-                });
+                }.start();
             }
         }
 
@@ -983,89 +998,104 @@ public class MainActivity extends FragmentActivity implements
 
         this.WhoCheckVersion = who;
 
-        if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(this.getApplicationContext());
-
-        }
-
         Log.d("LM", "检查apk及zip版本");
-        Map<String, String> params = new HashMap<>();
-        params.put("params", "{\"tenantCode\":\"KDY\"}");
+        String params2 = "{\"tenantCode\":\"KDY\"}";
+        String paramsEncoding = URLEncoder.encode(params2);
+        String Strurl = "http://120.77.206.44/easyToSell/" + "queryAppVersion.do?params=" + paramsEncoding;
+        HttpURLConnection conn=null;
+        try {
 
-        StringRequest mStringRequest = new StringRequest(Request.Method.POST,
-                Tools.getServerAddress(MainActivity.mContext) + "queryAppVersion.do?params={\"tenantCode\":\"KDY\"}", new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
+            URL url = new URL(Strurl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            conn.setRequestMethod("GET");
+            if(HttpURLConnection.HTTP_OK==conn.getResponseCode()){
 
-                com.alibaba.fastjson.JSONObject jo = JSON.parseObject(response);
+                InputStream in=conn.getInputStream();
+                String resultStr = Tools.inputStream2String(in);
+                resultStr = URLDecoder.decode(resultStr,"UTF-8");
 
-                String status = jo.getString("status");
+                try {
+                    JSONObject jsonObj = (JSONObject)(new JSONParser().parse(resultStr));
+                    Log.i("LM",jsonObj.toJSONString() + "\n" + jsonObj.getClass());
+                    String status = (String)jsonObj.get("status");
+                    String Msg = (String)jsonObj.get("Msg");
 
-                String apkDownloadUrl = null;
-                String server_apkVersion = null;
-                String zipDownloadUrl = null;
-                String server_zipVersion = null;
-                if (status.equals("1")) {
+                    String apkDownloadUrl = null;
+                    String server_apkVersion = null;
+                    String zipDownloadUrl = null;
+                    String server_zipVersion = null;
+                    if (status.equals("1")) {
 
-                    com.alibaba.fastjson.JSONObject dict = jo.getJSONObject("data");
-                    apkDownloadUrl = dict.getString("downloadUrl");
-                    server_apkVersion = dict.getString("versionNo");
-                    zipDownloadUrl = dict.getString("zipDownloadUrl");
-                    server_zipVersion = dict.getString("zipVersionNo");
-                }
-
-                if (server_apkVersion != null && apkDownloadUrl != null) {
-                    try {
-                        String current_apkVersion = mAppVersion;
-                        Log.d("LM","server_apkVersion:" + server_apkVersion + "\tcurrent_apkVersion:" + current_apkVersion);
-
-                        int compareVersion = Tools.compareVersion(server_apkVersion, current_apkVersion);
-                        if (compareVersion == 1) {
-
-                            createUpdateDialog(current_apkVersion, server_apkVersion, apkDownloadUrl);
-                        } else {
-
-                            Log.d("LM", "apk为最新版本");
-
-                            String curr_zipVersion = Tools.getAppZipVersion(mContext);
-                            compareVersion = Tools.compareVersion(server_zipVersion, curr_zipVersion);
+                        JSONObject dict = (JSONObject) jsonObj.get("data");
+                        apkDownloadUrl = (String) dict.get("downloadUrl");
+                        server_apkVersion = (String) dict.get("versionNo");
+                        zipDownloadUrl = (String) dict.get("zipDownloadUrl");
+                        server_zipVersion = (String) dict.get("zipVersionNo");
+                    }
+                    if (server_apkVersion != null && apkDownloadUrl != null) {
+                        try {
+                            String current_apkVersion = mAppVersion;
+                            Log.d("LM","server_apkVersion:" + server_apkVersion + "\tcurrent_apkVersion:" + current_apkVersion);
+                            int compareVersion = Tools.compareVersion(server_apkVersion, current_apkVersion);
                             if (compareVersion == 1) {
-
-                                Log.d("LM", "服务器zip版本：" + server_zipVersion + "    " + "本地zip版本：" + CURR_ZIP_VERSION);
-                                CURR_ZIP_VERSION = server_zipVersion;
-                                Log.d("LM", "更新zip...");
-                                showUpdataZipDialog(zipDownloadUrl);
+                                createUpdateDialog(current_apkVersion, server_apkVersion, apkDownloadUrl);
                             } else {
+                                Log.d("LM", "apk为最新版本");
+                                String curr_zipVersion = Tools.getAppZipVersion(mContext);
+                                compareVersion = Tools.compareVersion(server_zipVersion, curr_zipVersion);
+                                if (compareVersion == 1) {
+                                    Log.d("LM", "服务器zip版本：" + server_zipVersion + "    " + "本地zip版本：" + CURR_ZIP_VERSION);
+                                    CURR_ZIP_VERSION = server_zipVersion;
+                                    Log.d("LM", "更新zip...");
 
-                                Log.d("LM", "zip为最新版本");
+                                    final String finalZipDownloadUrl = zipDownloadUrl;
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
 
-                                if(WhoCheckVersion.equals("vue")) {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                                    builder.setTitle("");
-                                    builder.setMessage("已经是最新版本！");
-                                    builder.setPositiveButton("确定", null);
-                                    builder.show();
+                                            showUpdataZipDialog(finalZipDownloadUrl);
+                                        }
+                                    });
+
+                                } else {
+                                    Log.d("LM", "zip为最新版本");
+                                    if(WhoCheckVersion.equals("vue")) {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+
+                                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                                builder.setTitle("");
+                                                builder.setMessage("已经是最新版本！");
+                                                builder.setPositiveButton("确定", null);
+                                                builder.show();
+                                            }
+                                        });
+                                    }
                                 }
                             }
-//                            checkGpsState();
+                        } catch (Exception e) {
+                            Log.d("LM", "NameNotFoundException" + e.getMessage());
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        Log.d("LM", "NameNotFoundException" + e.getMessage());
-                        e.printStackTrace();
                     }
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
 
-                Log.d("LM", "检查版本接口|queryAppVersion.do|请求失败");
-                error.printStackTrace();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                in.close();
             }
-        });
-        mStringRequest.setRetryPolicy(new DefaultRetryPolicy(30*1000, 1, 1.0f));  // 设置超时
-        mStringRequest.setTag("FJAKSLDFJ");
-        mRequestQueue.add(mStringRequest);
+            else {
+                Log.d("LM", "检查版本接口|queryAppVersion.do|请求失败");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally{
+            conn.disconnect();
+        }
+        Log.d("LM", "checkVersion: ");
     }
 
     /******************************************************** HTML版本更新功能 ********************************************************/
@@ -1215,6 +1245,7 @@ public class MainActivity extends FragmentActivity implements
         return false;
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if(event.getKeyCode() == KeyEvent.KEYCODE_BACK ) {
