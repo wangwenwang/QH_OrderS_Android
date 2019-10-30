@@ -7,18 +7,23 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.os.Bundle;
 import android.util.Log;
@@ -91,6 +96,7 @@ public class MainActivity extends FragmentActivity implements
         ActionSheet.ActionSheetListener {
 
     private final int SDK_PERMISSION_REQUEST = 127;
+    private final int RequestAddContact = 1001;
     private String permissionInfo;
     private LocationService locationService;
 
@@ -506,6 +512,22 @@ public class MainActivity extends FragmentActivity implements
             Log.d("LM", "拍照5.9.1: ");
             takeCameraM();
         }
+        else if(requestCode== 1089) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                intentToContact();
+            } else {
+                Toast.makeText(MainActivity.this,"授权被禁止",Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void intentToContact() {
+        // 跳转到联系人界面
+        Intent intent = new Intent();
+        intent.setAction("android.intent.action.PICK");
+        intent.addCategory("android.intent.category.DEFAULT");
+        intent.setType("vnd.android.cursor.dir/phone_v2");
+        startActivityForResult(intent, 1088);
     }
 
 
@@ -515,6 +537,39 @@ public class MainActivity extends FragmentActivity implements
         Log.d("LM", "onActivityResult: ----");
 
         super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode==1088) {
+            if (data != null) {
+                Uri uri = data.getData();
+                String phoneNum = null;
+                String contactName = null;
+                // 创建内容解析者
+                ContentResolver contentResolver = getContentResolver();
+                Cursor cursor = null;
+                if (uri != null) {
+                    cursor = contentResolver.query(uri,
+                            new String[]{"display_name","data1"}, null, null, null);
+                }
+                while (cursor.moveToNext()) {
+                    contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                    phoneNum = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                }
+                cursor.close();
+                //  把电话号码中的  -  符号 替换成空格
+                if (phoneNum != null) {
+                    phoneNum = phoneNum.replaceAll("-", " ");
+                    // 空格去掉  为什么不直接-替换成"" 因为测试的时候发现还是会有空格 只能这么处理
+                    phoneNum= phoneNum.replaceAll(" ", "");
+                }
+
+                Log.d("LM", "contactName:" + contactName);
+                Log.d("LM", "phoneNum:" + phoneNum);
+
+                String url1 = "javascript:SetContactPeople('" + contactName + "','" + phoneNum + "')";
+                MainActivity.mWebView.loadUrl(url1);
+                Log.d("LM", url1);
+            }
+        }
 
         if (null == uploadMessage && null == uploadMessageAboveL) return;
 
@@ -855,6 +910,40 @@ public class MainActivity extends FragmentActivity implements
 
                 Tools.setServerAddress(mContext, inputName);
             }
+            // 调用通讯录
+            else if(exceName.equals("调用通讯录")) {
+//
+                new Thread() {
+                    public void run() {
+
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+
+                                //**版本判断。当手机系统大于 23 时，才有必要去判断权限是否获取**
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                    //ContextCompat.checkSelfPermission() 方法 指定context和某个权限 返回PackageManager.PERMISSION_DENIED或者PackageManager.PERMISSION_GRANTED
+                                    if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.READ_CONTACTS)
+                                            != PackageManager.PERMISSION_GRANTED) {
+                                        // 若不为GRANTED(即为DENIED)则要申请权限了
+                                        // 申请权限 第一个为context 第二个可以指定多个请求的权限 第三个参数为请求码
+                                        ActivityCompat.requestPermissions(MainActivity.this,
+                                                new String[]{android.Manifest.permission.READ_CONTACTS},
+                                                1089);
+                                    } else {
+                                        //权限已经被授予，在这里直接写要执行的相应方法即可
+                                        Log.d("LM", "通讯录已授权");
+                                        intentToContact();
+                                    }
+                                }else {
+                                    // 低于6.0的手机直接访问
+                                    intentToContact();
+                                }
+//                            }
+//                        });
+                    }
+                }.start();
+            }
         }
 
         @JavascriptInterface
@@ -1066,8 +1155,7 @@ public class MainActivity extends FragmentActivity implements
                                             public void run() {
 
                                                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                                                builder.setTitle("");
-                                                builder.setMessage("已经是最新版本！");
+                                                builder.setTitle("");                                                builder.setMessage("已经是最新版本！");
                                                 builder.setPositiveButton("确定", null);
                                                 builder.show();
                                             }
