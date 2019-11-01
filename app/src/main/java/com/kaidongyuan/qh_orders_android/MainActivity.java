@@ -340,7 +340,19 @@ public class MainActivity extends FragmentActivity implements
 
                     new Thread() {
                         public void run() {
-                            checkVersion("原生");
+                            while (true){
+
+                                Log.d("LM", "未获取服务器地址，等待一秒1");
+                                try {
+                                    sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                if(Tools.getServerAddress(MainActivity.mContext) != ""){
+                                    checkVersion("原生");
+                                    break;
+                                }
+                            }
                         }
                     }.start();
                 }else {
@@ -366,7 +378,20 @@ public class MainActivity extends FragmentActivity implements
 
                 new Thread() {
                     public void run() {
-                        checkVersion("原生");
+                        while (true){
+
+                            Log.d("LM", "未获取服务器地址，等待一秒2");
+                            try {
+                                sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            if(Tools.getServerAddress(MainActivity.mContext) != ""){
+                                String fds = Tools.getServerAddress(MainActivity.mContext);
+                                checkVersion("原生");
+                                break;
+                            }
+                        }
                     }
                 }.start();
             }
@@ -1090,7 +1115,8 @@ public class MainActivity extends FragmentActivity implements
         Log.d("LM", "检查apk及zip版本");
         String params2 = "{\"tenantCode\":\"KDY\"}";
         String paramsEncoding = URLEncoder.encode(params2);
-        String Strurl = "http://120.77.206.44/easyToSell/" + "queryAppVersion.do?params=" + paramsEncoding;
+        String Strurl = Tools.getServerAddress(MainActivity.mContext) + "queryAppVersion.do?params=" + paramsEncoding;
+
         HttpURLConnection conn=null;
         try {
 
