@@ -152,6 +152,9 @@ public class MainActivity extends FragmentActivity implements
     private final int RequestPermission_STATUS_CODE0 = 8800;
     private RequestQueue mRequestQueue;
 
+    // 点击物理返回键的次数
+    private int return_key_times = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -1364,7 +1367,11 @@ public class MainActivity extends FragmentActivity implements
     public boolean dispatchKeyEvent(KeyEvent event) {
         if(event.getKeyCode() == KeyEvent.KEYCODE_BACK ) {
             //do something.
-            Toast.makeText(mContext, "请使用左上角的返回键", LENGTH_LONG).show();
+            this.return_key_times++;
+            if(this.return_key_times % 6 == 0) {
+
+                Toast.makeText(mContext, "请使用左上角的返回键", LENGTH_LONG).show();
+            }
             return true;
         }else {
             return super.dispatchKeyEvent(event);
