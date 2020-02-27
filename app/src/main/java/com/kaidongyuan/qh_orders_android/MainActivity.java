@@ -300,7 +300,7 @@ public class MainActivity extends FragmentActivity implements
                     }
                     // 最后通知图库更新
                     getApplicationContext().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + picFile)));
-                    Toast.makeText(mContext, "图片保存图库成功", Toast.LENGTH_LONG).show();
+                    Toast.makeText(mContext, "图片保存成功", Toast.LENGTH_LONG).show();
                 }
             };
 
@@ -1054,6 +1054,13 @@ public class MainActivity extends FragmentActivity implements
                     sp.edit().putString("UserName", u).apply();
                     sp.edit().putString("Password", p).apply();
                 }
+                new Thread() {
+                    public void run() {
+
+                        checkVersion("原生");
+
+                    }
+                }.start();
             }
         }
 
