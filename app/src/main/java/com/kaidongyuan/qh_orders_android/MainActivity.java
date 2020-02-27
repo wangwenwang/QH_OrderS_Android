@@ -18,6 +18,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.os.StrictMode;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
@@ -57,6 +59,7 @@ import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baoyz.actionsheet.ActionSheet;
 import com.kaidongyuan.qh_orders_android.Tools.Constants;
+import com.kaidongyuan.qh_orders_android.Tools.DownPicUtil;
 import com.kaidongyuan.qh_orders_android.Tools.LocationApplication;
 import com.kaidongyuan.qh_orders_android.Tools.MPermissionsUtil;
 import com.kaidongyuan.qh_orders_android.Tools.SystemUtil;
@@ -71,6 +74,7 @@ import org.json.simple.parser.ParseException;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -278,6 +282,69 @@ public class MainActivity extends FragmentActivity implements
                 super.onReceivedTitle(view, title);
             }
         });
+
+        // 长按点击事件
+        mWebView.setOnLongClickListener(new View.OnLongClickListener() {
+
+            Handler handler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    String picFile = (String) msg.obj;
+                    String[] split = picFile.split("/");
+                    String fileName = split[split.length - 1];
+                    try {
+                        MediaStore.Images.Media.insertImage(getApplicationContext().getContentResolver(), picFile, fileName, null);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    // 最后通知图库更新
+                    getApplicationContext().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + picFile)));
+                    Toast.makeText(mContext, "图片保存图库成功", Toast.LENGTH_LONG).show();
+                }
+            };
+
+            @Override
+            public boolean onLongClick(View view) {
+                final WebView.HitTestResult hitTestResult = mWebView.getHitTestResult();
+                // 如果是图片类型或者是带有图片链接的类型
+                if (hitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE ||
+                        hitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+                    // 弹出保存图片的对话框
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle("");
+                    builder.setMessage("保存图片到本地");
+                    builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            final String url = hitTestResult.getExtra();
+
+                            // 下载图片到本地
+                            DownPicUtil.downPic(url, new DownPicUtil.DownFinishListener() {
+
+                                @Override
+                                public void getDownPath(String s) {
+                                    Toast.makeText(mContext, "下载完成", Toast.LENGTH_LONG).show();
+                                    Message msg = Message.obtain();
+                                    msg.obj = s;
+                                    handler.sendMessage(msg);
+                                }
+                            });
+                        }
+                    });
+                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        // 自动dismiss
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+                return true;
+            }
+        });
+
 
         // 获取上次启动记录的版本号
         String lastVersion = Tools.getAppLastTimeVersion(mContext);
