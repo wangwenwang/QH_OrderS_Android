@@ -19,7 +19,6 @@ import com.kaidongyuan.qh_orders_android.R;
 
 public class DeviceReceiver extends BroadcastReceiver {
 
-
     private ArrayList<String> deviceList_found=new ArrayList<String>();
     private ArrayAdapter<String> adapter;
     private ListView listView;
@@ -57,9 +56,6 @@ public class DeviceReceiver extends BroadcastReceiver {
                     e.printStackTrace();
                 }
             }
-
-
         }
-
     }
 }

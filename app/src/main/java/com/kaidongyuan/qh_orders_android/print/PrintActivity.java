@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -20,7 +19,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 import com.kaidongyuan.qh_orders_android.R;
 import com.kaidongyuan.qh_orders_android.Tools.SharedPreferenceConstants;
@@ -32,7 +30,6 @@ import net.posprinter.posprinterface.ProcessData;
 import net.posprinter.posprinterface.UiExecute;
 import net.posprinter.service.PosprinterService;
 import net.posprinter.utils.DataForSendToPrinterPos80;
-import net.posprinter.utils.PosPrinterDev;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -72,8 +69,7 @@ public class PrintActivity extends Activity implements View.OnClickListener {
     Button BTCon,//连接按钮
             BTDisconnect,
             BtSb,
-            btPrintCustom,   //打印客户联
-            btPrintReceipt;  //打印回单联
+            btPrintCustom;   //打印客户联
     EditText showET;//显示
     BluetoothAdapter bluetoothAdapter;
     private View dialogView;
@@ -89,14 +85,8 @@ public class PrintActivity extends Activity implements View.OnClickListener {
     String mac;
     private DeviceReceiver myDevice;
 
-    // 总金额
-    private float outPutTotalPrice = (float) 0.0;
-
     // 打印的json
     private JSONObject dict = null;
-
-    // 上下文
-    public static Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,9 +102,6 @@ public class PrintActivity extends Activity implements View.OnClickListener {
             e.printStackTrace();
         }
 
-        String fd = dict.get("header").toString();
-        Log.d("LM", "onCreate: ");
-
         try {
             //绑定service，获取ImyBinder对象
             Intent intent = new Intent(this, PosprinterService.class);
@@ -125,7 +112,6 @@ public class PrintActivity extends Activity implements View.OnClickListener {
             autoConBlue();
         } catch (Exception e) {
             Log.d("LM", "onCreate: ");
-//            ExceptionUtil.handlerException(e);
         }
     }
 
@@ -226,7 +212,6 @@ public class PrintActivity extends Activity implements View.OnClickListener {
         findAvalibleDevice();
     }
 
-
     private void setDlistener() {
         // TODO Auto-generated method stub
         btn_scan.setOnClickListener(new View.OnClickListener() {
@@ -235,7 +220,6 @@ public class PrintActivity extends Activity implements View.OnClickListener {
             public void onClick(View v) {
                 // TODO Auto-generated method stub
                 LLlayout.setVisibility(View.VISIBLE);
-                //btn_scan.setVisibility(View.GONE);
             }
         });
         //已配对的设备的点击连接
@@ -256,12 +240,9 @@ public class PrintActivity extends Activity implements View.OnClickListener {
                     // 存储mac，下次自动连接
                     SharedPreferencesUtil.WriteSharedPreferences(SharedPreferenceConstants.ARCH_LINUX,
                             SharedPreferenceConstants.LAST_BLUETOOTH_CONNECTION, mac);
-
-                    String name = msg.substring(0, msg.length() - 18);
-                    //lv1.setSelection(arg2);
+;
                     dialog.cancel();
                     showET.setText(mac);
-                    //Log.i("TAG", "mac="+mac);
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -286,8 +267,6 @@ public class PrintActivity extends Activity implements View.OnClickListener {
                     SharedPreferencesUtil.WriteSharedPreferences(SharedPreferenceConstants.ARCH_LINUX,
                             SharedPreferenceConstants.LAST_BLUETOOTH_CONNECTION, mac);
 
-                    String name = msg.substring(0, msg.length() - 18);
-                    //lv2.setSelection(arg2);
                     dialog.cancel();
                     showET.setText(mac);
                     Log.i("TAG", "mac=" + mac);
@@ -325,50 +304,6 @@ public class PrintActivity extends Activity implements View.OnClickListener {
 
     }
 
-    View dialogView3;
-    private TextView tv_usb;
-    private List<String> usbList, usblist;
-
-    /*
-    uSB连接
-     */
-    private void setUSB() {
-        LayoutInflater inflater = LayoutInflater.from(this);
-        dialogView3 = inflater.inflate(R.layout.usb_link, null);
-        tv_usb = (TextView) dialogView3.findViewById(R.id.textView1);
-        lv_usb = (ListView) dialogView3.findViewById(R.id.listView1);
-
-        usbList = PosPrinterDev.GetUsbPathNames(this);
-        if (usbList == null) {
-            usbList = new ArrayList<>();
-        }
-        usblist = usbList;
-        tv_usb.setText(getString(R.string.usb_pre_con) + usbList.size());
-        adapter3 = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, usbList);
-        lv_usb.setAdapter(adapter3);
-
-
-        android.support.v7.app.AlertDialog dialog = new android.support.v7.app.AlertDialog.Builder(this)
-                .setView(dialogView3).create();
-        dialog.show();
-
-        setUsbLisener(dialog);
-    }
-
-    String usbDev = "";
-
-    public void setUsbLisener(final android.support.v7.app.AlertDialog dialog) {
-
-        lv_usb.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                usbDev = usbList.get(i);
-                showET.setText(usbDev);
-                dialog.cancel();
-                Log.e("usbDev: ", usbDev);
-            }
-        });
-    }
 
     @Override
     public void onClick(View view) {

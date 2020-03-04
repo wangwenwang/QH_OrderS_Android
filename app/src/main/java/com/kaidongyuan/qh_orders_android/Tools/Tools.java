@@ -30,7 +30,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static android.content.Context.MODE_MULTI_PROCESS;
-import static android.widget.Toast.LENGTH_LONG;
 
 public class Tools {
 
