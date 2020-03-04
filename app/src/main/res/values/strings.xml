@@ -1,3 +1,84 @@
 <resources>
     <string name="app_name">卖货易</string>
+    <string name="please_check_net">请检查网络是否正常连接！</string>
+    <string name="no_set">暂无设置</string>
+    <string name="no_data">无数据！</string>
+    <string name="news_no_data">尊敬的各经销商客户：\n\t\t\t我司于8月份正式启用APP对账模式，即每月10号前我司将在APP上出具各经销商截止上月月底余额，请各经销商客户及时在APP进行查看与核实，有问题请及时反馈。\n联系人：桂小姐，电话：13243863247，谢谢!</string>
+    <string name="no_dataandrefresh">无数据！\n\n点击重新加载数据!</string>
+    <string name="sendrequest_fail">发送请求失败！</string>
+    <string name="all">全部</string>
+
+    <!--欢迎界面-->
+    <string name="skip_welcomeactivity">跳过</string>
+
+    <!--登录界面-->
+    <string name="title_loginactivity">登录</string>
+    <string name="input_phone_number">请输入手机号</string>
+    <string name="input_password">请输入密码</string>
+    <string name="login">登\t\t录</string>
+    <string name="register">注\t册\t帐\t号</string>
+    <!-- MainActivity -->
+    <string name="menue_makeOrder">采购订单</string>
+    <string name="menue_checkOrder">查采购单</string>
+    <string name="menue_home">主页</string>
+    <string name="menue_mine">我的</string>
+    <string name="title_home_text">主页</string>
+    <string name="menue_text_unselectedcolor">"#777777"</string>
+    <string name="menue_text_selectedcolor">#F08300</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="menue_inventory_Party">库存客户</string>
+    <string name="menue_fee_Party">客户列表</string>
+    <string name="menue_billfee_list">账单月份列表</string>
+    <string name="text_billfee_note">尊敬的各经销商客户：以下为我司出具的对账单须知事项\n1、次月10号前我司出具所有客户对账单\n2、对账单余额为截止当月月末余额\n3、本月留存提货余额，若显示负数，表示客户欠我司货款。</string>
+
+    <string name="menue_to_address">出库客户列表</string>
+    <string name="hello"><u>phone:0123456</u></string>
+
+
+
+    <string name="yb_cancel">取消</string>
+
+
+    <string name="usb_pre_con">当前连接的USB设备数：</string>
+    <string name="none_ble_device">没有找到新的蓝牙设备</string>
+    <string-array name="port">
+        <item >网络</item>
+        <item >蓝牙</item>
+        <item >USB</item>
+    </string-array>
+    <string name="sb">设备</string>
+    <string name="hint">请输入IP地址</string>
+    <string name="connect">连接</string>
+    <string name="discon">断开</string>
+    <string name="start_pos_activity">跳转到POS打印</string>
+    <string name="start_76_activity">跳到76打印机</string>
+    <string name="start_tsc_activity">跳到条码打印机</string>
+    <string name="contextandcode">打印文本，直线，条码</string>
+    <string name="image">打印图片</string>
+    <string name="read">读取数据</string>
+    <string name="barcode">打印条码</string>
+    <string name="text">打印文本并切纸</string>
+    <string name="bleselect">请选择蓝牙设备</string>
+    <string name="usbselect">请选择USB设备</string>
+    <string name="toast_discon_success">断开连接成功</string>
+    <string name="toast_discon_faile">断开连接失败</string>
+    <string name="toast_present_con">当前并未连接</string>
+    <string name="connect_first">请先连接打印机!</string>
+    <string name="none_ipaddress">请先输入ip地址!</string>
+    <string name="con_success">连接成功</string>
+    <string name="con_failed">连接失败</string>
+    <string name="con_has_discon">连接已断开</string>
+    <string name="text_for">请输入要打印的内容!</string>
 </resources>
+
+
+
+
+
+
+
+
+
+
+

@@ -57,4 +57,7 @@ dependencies {
     compile 'com.qianwen:update-app:3.5.2'
     compile 'com.allenliu.versionchecklib:library:2.2.0'
     compile 'com.baoyz.actionsheet:library:1.1.7'
+    compile files('libs/posprinterconnectandsendsdk.jar')
+    //百分布局库
+    implementation 'com.zhy:percent-support-extends:1.0.1'
 }

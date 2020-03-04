@@ -91,6 +91,29 @@
     <!--获取通讯录权限-->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
+    <!-- 打印 -->
+    <uses-feature android:required="true" android:name="android.hardware.usb.host" />
+    <uses-permission android:name="android.hardware.usb.UsbAccessory" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.RESTART_PACKAGES" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+
 
     <application
         android:name="com.kaidongyuan.qh_orders_android.Tools.LocationApplication"
@@ -110,6 +133,9 @@
         </service>
 
 
+        <service android:name="net.posprinter.service.PosprinterService" />
+
+
         <!-- AK鉴权 -->
         <!-- meta-data需要写在application中 -->
         <meta-data
@@ -126,6 +152,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <!--打印-->
+        <activity
+            android:name="com.kaidongyuan.qh_orders_android.print.PrintActivity"
+            android:launchMode="standard"
+            android:screenOrientation="portrait"/>
 
         <activity android:name="com.kaidongyuan.qh_orders_android.wxapi.WXEntryActivity" android:exported="true" />
 

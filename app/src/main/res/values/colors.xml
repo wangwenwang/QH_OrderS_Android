@@ -3,4 +3,17 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <!--体统默认背景颜色-->
+    <color name="default_bg">#F5F5F5</color>
+    <!--顶部标题栏背景颜色-->
+    <color name="title_background">#f08300</color>
+    <!--顶部标题字体颜色-->
+    <color name="text_title_color">#FAFAFA</color>
+
+    <!--蓝牙打印-->
+    <color name="button_main">#18c117</color>
+    <color name="button_dark">#0fa466</color>
+    <color name="button_unable">#cccccc</color>
+    <color name="disconnet_color">#ea0923</color>
 </resources>

@@ -64,6 +64,7 @@ import com.kaidongyuan.qh_orders_android.Tools.LocationApplication;
 import com.kaidongyuan.qh_orders_android.Tools.MPermissionsUtil;
 import com.kaidongyuan.qh_orders_android.Tools.SystemUtil;
 import com.kaidongyuan.qh_orders_android.Tools.Tools;
+import com.kaidongyuan.qh_orders_android.print.PrintActivity;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
@@ -109,7 +110,7 @@ public class MainActivity extends FragmentActivity implements
 
     public static Context mContext;
 
-    String inputName;
+    String inputName = "";
 
     String appName;
 
@@ -983,22 +984,23 @@ public class MainActivity extends FragmentActivity implements
 
                 Log.d("LM", "查看路线");
 
-//                new Thread() {
-//
-//                    public void run() {
-//
-//
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//
-//                                Intent intent2 = new Intent(LoginActivity.mContext, OrderTrackActivity.class);
-//                                intent2.putExtra("order_IDX", inputName);
-//                                mContext.startActivity(intent2);
-//                            }
-//                        });
-//                    }
-//                }.start();
+            } else if (exceName.equals("打印")) {
+
+                new Thread() {
+
+                    public void run() {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                Intent printIntent = new Intent(MainActivity.mContext, PrintActivity.class);
+                                printIntent.putExtra("json_print", inputName);
+                                mContext.startActivity(printIntent);
+                            }
+                        });
+                    }
+                }.start();
             }
             // 服务器地址
             else if(exceName.equals("服务器地址")) {

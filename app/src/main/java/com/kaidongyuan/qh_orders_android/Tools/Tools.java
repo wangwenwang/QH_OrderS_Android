@@ -18,10 +18,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -392,5 +395,74 @@ public class Tools {
     public static String doubleToString(double num){
         //使用0.0不足位补0，#.#仅保留有效位
         return new DecimalFormat("0.0").format(num);
+    }
+
+    public static int textLength(String s) {
+        byte[] buff = new byte[0];
+        try {
+            buff = s.getBytes("GBK");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return buff.length;
+    }
+
+    public static String oneDecimal(String s) {
+        DecimalFormat decimalFormat = new DecimalFormat("0.0");//将double类型保留两位小数，不四舍五入
+        String uf = decimalFormat.format(Double.parseDouble(s));
+        return uf;
+    }
+
+    public static String twoDecimal(String s) {
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");//将double类型保留两位小数，不四舍五入
+        String uf = decimalFormat.format(Double.parseDouble(s));
+        return uf;
+    }
+
+    public static String oneDecimal(double f) {
+        DecimalFormat decimalFormat = new DecimalFormat("0.0");//将double类型保留两位小数，不四舍五入
+        String uf = decimalFormat.format(f);
+        return uf;
+    }
+
+    public static String twoDecimal(double f) {
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");//将double类型保留两位小数，不四舍五入
+        String uf = decimalFormat.format(f);
+        return uf;
+    }
+
+    /**
+     * 获取当前时间 yyyy-MM-dd HH:mm:ss
+     * @return
+     */
+    public static String get_y_m_d_h_m_s() {
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateFormat.format(date);
+    }
+
+    /**
+     * 字符串转byte数组
+     * */
+    public static byte[] strTobytes(String str){
+        byte[] b=null,data=null;
+        try {
+            b = str.getBytes("utf-8");
+            data=new String(b,"utf-8").getBytes("gbk");
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return data;
+    }
+
+    /**
+     * 显示在屏幕底部
+     * @param msg 要显示的信息
+     * @param time 显示的时间 Toast.LENGTH_LONG or Toast.LENGTH_SHORT
+     */
+    public static void showToastBottom(Object msg, int time){
+        String message = String.valueOf(msg);
+        Toast.makeText(LocationApplication.getAppContext(), message, time).show();
     }
 }
