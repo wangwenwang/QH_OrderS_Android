@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/percentRL_title"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="#f08300">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp">
+
+                <TextView
+                    android:id="@+id/tv_shipment_code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_centerInParent="true"
+                    android:gravity="center"
+                    android:text="配载单号："
+                    android:textColor="#FAFAFA"
+                    android:textSize="15sp" />
+
+            </RelativeLayout>
+
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_marginTop="20dp">
+
+                <TextView
+                    android:id="@+id/tv_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_centerInParent="true"
+                    android:gravity="center"
+                    android:text="查看路线"
+                    android:textColor="#FAFAFA"
+                    android:textSize="15sp"/>
+
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/button_goback"
+                android:layout_width="38dp"
+                android:layout_height="match_parent"
+                android:paddingBottom="8dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="10dp"
+                android:paddingTop="8dp"
+                android:src="@drawable/back" />
+        </RelativeLayout>
+
+        <com.baidu.mapapi.map.MapView
+            android:id="@+id/mapView_orderTrack"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></com.baidu.mapapi.map.MapView>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_prompt"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text=""
+        android:textColor="@color/black" />
+
+</FrameLayout>

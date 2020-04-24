@@ -22,8 +22,8 @@ android {
         applicationId "com.kaidongyuan.qh_orders_android"
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode 3
-        versionName "1.0.2"
+        versionCode 4
+        versionName "1.0.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -60,4 +60,5 @@ dependencies {
     compile files('libs/posprinterconnectandsendsdk.jar')
     //百分布局库
     implementation 'com.zhy:percent-support-extends:1.0.1'
+    compile 'com.zhy:okhttputils:2.6.2'
 }

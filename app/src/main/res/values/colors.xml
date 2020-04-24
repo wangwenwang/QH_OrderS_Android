@@ -16,4 +16,7 @@
     <color name="button_dark">#0fa466</color>
     <color name="button_unable">#cccccc</color>
     <color name="disconnet_color">#ea0923</color>
+
+
+    <color name="black">#ff000000</color>
 </resources>

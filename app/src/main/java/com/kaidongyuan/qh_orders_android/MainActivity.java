@@ -58,6 +58,7 @@ import com.kaidongyuan.qh_orders_android.Tools.MPermissionsUtil;
 import com.kaidongyuan.qh_orders_android.Tools.SystemUtil;
 import com.kaidongyuan.qh_orders_android.Tools.Tools;
 import com.kaidongyuan.qh_orders_android.print.PrintActivity;
+import com.kaidongyuan.qh_orders_android.track.OrderTrackActivity;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
@@ -1052,16 +1053,18 @@ public class MainActivity extends FragmentActivity implements
         }
 
         @JavascriptInterface
-        public void callAndroid(String exceName, String lng1, String lat1, String address1) {
+        public void callAndroid(String exceName, final String lng1, final String lat1, final String address1) {
 
             Log.d("LM", "执行:" + exceName + "    " + "经度:" + lng + "    " + "纬度:" + lat + "    " + "地址:" + address);
-            lng = Double.valueOf(lng1).doubleValue();
-            lat = Double.valueOf(lat1).doubleValue();
-            address = address1;
 
             if (exceName.equals("导航")) {
 
                 Log.d("LM", "导航");
+
+                lng = Double.valueOf(lng1).doubleValue();
+                lat = Double.valueOf(lat1).doubleValue();
+                address = address1;
+
 
                 new Thread() {
 
@@ -1104,6 +1107,27 @@ public class MainActivity extends FragmentActivity implements
 
                                     Toast.makeText(mContext, "未检索到本机已安装‘百度地图’或‘高德地图’App", LENGTH_LONG).show();
                                 }
+                            }
+                        });
+                    }
+                }.start();
+            }
+
+            else if (exceName.equals("查看路线")) {
+
+                new Thread() {
+
+                    public void run() {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                Intent intent2 = new Intent(MainActivity.mContext, OrderTrackActivity.class);
+                                intent2.putExtra("order_IDX", lng1);
+                                intent2.putExtra("shipment_Code", lat1);
+                                intent2.putExtra("shipment_Status", address1);
+                                mContext.startActivity(intent2);
                             }
                         });
                     }

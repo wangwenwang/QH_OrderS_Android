@@ -160,6 +160,12 @@
             android:launchMode="standard"
             android:screenOrientation="portrait"/>
 
+        <!--查看路线-->
+        <activity
+            android:name="com.kaidongyuan.qh_orders_android.track.OrderTrackActivity"
+            android:launchMode="standard"
+            android:screenOrientation="portrait"/>
+
         <activity android:name="com.kaidongyuan.qh_orders_android.wxapi.WXEntryActivity" android:exported="true" />
 
     </application>
