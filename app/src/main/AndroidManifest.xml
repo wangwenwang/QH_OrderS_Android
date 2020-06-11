@@ -124,6 +124,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme">
 
+        <service android:name="com.amap.api.location.APSService"></service>
 
         <!-- 声明service组件 -->
         <service
@@ -132,7 +133,9 @@
             android:process=":remote" >
         </service>
 
-
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="f26033cdd9f9214742a85c8d35d1c82a"/>
         <service android:name="net.posprinter.service.PosprinterService" />
 
 

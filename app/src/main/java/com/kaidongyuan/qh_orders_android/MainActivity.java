@@ -42,6 +42,8 @@ import android.widget.Toast;
 
 import com.allenliu.versionchecklib.v2.AllenVersionChecker;
 import com.allenliu.versionchecklib.v2.builder.UIData;
+import com.amap.api.location.AMapLocationClient;
+import com.amap.api.location.AMapLocationClientOption;
 import com.android.volley.RequestQueue;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
@@ -146,6 +148,11 @@ public class MainActivity extends FragmentActivity implements
     // 点击物理返回键的次数
     private int return_key_times = 0;
 
+    private AMapLocationClient locationClient = null;
+
+    //声明AMapLocationClientOption对象
+    public AMapLocationClientOption mLocationOption = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -183,6 +190,47 @@ public class MainActivity extends FragmentActivity implements
         appName = getResources().getString(R.string.app_name);
 
         mWebView = (WebView) findViewById((R.id.lmwebview));
+
+
+
+
+
+        /************************** 高德地图H5辅助定位开始 **************************/
+        //初始化AMapLocationClientOption对象
+        mLocationOption = new AMapLocationClientOption();
+        /**
+         * 设置定位场景，目前支持三种场景（签到、出行、运动，默认无场景）
+         */
+        mLocationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.SignIn);
+        if(null != locationClient){
+            locationClient.setLocationOption(mLocationOption);
+            //设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
+            locationClient.stopLocation();
+            locationClient.startLocation();
+        }
+        //设置定位模式为AMapLocationMode.Hight_Accuracy，高精度模式。
+        mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
+        //获取一次定位结果：
+        //该方法默认为false。
+        mLocationOption.setOnceLocation(true);
+        //获取最近3s内精度最高的一次定位结果：
+        //设置setOnceLocationLatest(boolean b)接口为true，启动定位时SDK会返回最近3s内精度最高的一次定位结果。如果设置其为true，setOnceLocation(boolean b)接口也会被设置为true，反之不会，默认为false。
+        mLocationOption.setOnceLocationLatest(true);
+        //设置是否返回地址信息（默认返回地址信息）
+        mLocationOption.setNeedAddress(true);
+        locationClient = new AMapLocationClient(getApplicationContext());
+        //给定位客户端对象设置定位参数
+        locationClient.setLocationOption(mLocationOption);
+        //启动定位
+        locationClient.startLocation();
+        //建议在设置webView参数之前调用启动H5辅助定位接口
+        locationClient.startAssistantLocation(mWebView);
+        /************************** 高德地图H5辅助定位结束 **************************/
+
+
+
+
+
         mWebView.getSettings().setTextZoom(100);
 
         mWebView.setWebViewClient(new WebViewClient() {
@@ -1426,14 +1474,16 @@ public class MainActivity extends FragmentActivity implements
             String Waybill = "file:///data/data/com.kaidongyuan.qh_orders_android/upzip/dist/index.html#/SalesOrder";
             // 查单
             String ReportForms = "file:///data/data/com.kaidongyuan.qh_orders_android/upzip/dist/index.html#/QuerySalesOrder";
+            // 通宇查单
+            String QueryOrder_TY = "file:///data/data/com.kaidongyuan.qh_orders_android/upzip/dist/index.html#/QueryOrder_TY";
             // 我的
             String HomeIndex = "file:///data/data/com.kaidongyuan.qh_orders_android/upzip/dist/index.html#/Home";
 
             // 主菜单时不允许返回上一页
             if (
                     curURL.indexOf(Index + "?") != -1 || curURL.equals(Index) ||
-                            curURL.indexOf(Waybill + "?") != -1 || curURL.equals(Waybill) ||
                             curURL.indexOf(ReportForms + "?") != -1 || curURL.equals(ReportForms) ||
+                            curURL.indexOf(QueryOrder_TY + "?") != -1 || curURL.equals(QueryOrder_TY) ||
                             curURL.indexOf(HomeIndex + "?") != -1 || curURL.equals(HomeIndex)
                     ) {
 
@@ -1447,19 +1497,19 @@ public class MainActivity extends FragmentActivity implements
         return false;
     }
 
-    @SuppressLint("RestrictedApi")
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        if(event.getKeyCode() == KeyEvent.KEYCODE_BACK ) {
-            //do something.
-            this.return_key_times++;
-            if(this.return_key_times % 6 == 0) {
-
-                Toast.makeText(mContext, "请使用左上角的返回键", LENGTH_LONG).show();
-            }
-            return true;
-        }else {
-            return super.dispatchKeyEvent(event);
-        }
-    }
+//    @SuppressLint("RestrictedApi")
+//    @Override
+//    public boolean dispatchKeyEvent(KeyEvent event) {
+//        if(event.getKeyCode() == KeyEvent.KEYCODE_BACK ) {
+//            //do something.
+//            this.return_key_times++;
+//            if(this.return_key_times % 6 == 0) {
+//
+//                Toast.makeText(mContext, "请使用左上角的返回键", LENGTH_LONG).show();
+//            }
+//            return true;
+//        }else {
+//            return super.dispatchKeyEvent(event);
+//        }
+//    }
 }

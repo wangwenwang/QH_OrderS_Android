@@ -61,4 +61,5 @@ dependencies {
     //百分布局库
     implementation 'com.zhy:percent-support-extends:1.0.1'
     compile 'com.zhy:okhttputils:2.6.2'
+    compile files('libs/AMap2DMap_6.0.0_AMapLocation_4.9.0_20200302.aar')
 }
