@@ -1075,6 +1075,18 @@ public class MainActivity extends FragmentActivity implements
                     }
                 }.start();
             }
+            // 四级标准地址库
+            else if(exceName.equals("四级标准地址库")) {
+
+                sp.edit().putString("P_C_D_F", inputName).apply();
+            }
+            // 新建门店页面已加载
+            else if(exceName.equals("新建门店页面已加载")) {
+
+                String p_c_d_f = sp.getString("P_C_D_F", "");
+                String url = "javascript:P_C_D_F('" + p_c_d_f + "')";
+                MainActivity.mWebView.loadUrl(url);
+            }
         }
 
         @JavascriptInterface
