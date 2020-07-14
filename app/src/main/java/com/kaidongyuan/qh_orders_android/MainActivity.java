@@ -375,8 +375,10 @@ public class MainActivity extends FragmentActivity implements
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
+                    return true;
+                }else{
+                    return false;
                 }
-                return true;
             }
         });
 
