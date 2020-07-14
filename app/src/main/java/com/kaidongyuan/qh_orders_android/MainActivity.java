@@ -23,11 +23,13 @@ import android.os.Message;
 import android.os.StrictMode;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -424,6 +426,27 @@ public class MainActivity extends FragmentActivity implements
 
         // 注册微信登录
         registToWX();
+
+        if(this.isLocationEnabled() == false){
+            Toast.makeText(mContext, "请开启GPS位置权限，用于客户拜访功能", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public boolean isLocationEnabled() {
+        int locationMode = 0;
+        String locationProviders;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            try {
+                locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+        } else {
+            locationProviders = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            return !TextUtils.isEmpty(locationProviders);
+        }
     }
 
     private void registToWX() {
@@ -835,7 +858,13 @@ public class MainActivity extends FragmentActivity implements
                 lat = location.getLatitude();
 
                 String url = "javascript:SetCurrAddress('" + address + "','" + lng + "','" + lat + "')";
-                MainActivity.mWebView.loadUrl(url);
+                if(address != null){
+                    MainActivity.mWebView.loadUrl(url);
+                }else{
+                    if(isLocationEnabled() == false){
+                        Toast.makeText(mContext, "请开启GPS位置权限，用于客户拜访功能", Toast.LENGTH_LONG).show();
+                    }
+                }
                 Log.d("LM", url);
 
                 StringBuffer sb = new StringBuffer(256);
