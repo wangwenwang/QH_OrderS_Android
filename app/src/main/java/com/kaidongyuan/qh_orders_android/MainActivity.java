@@ -1500,7 +1500,11 @@ public class MainActivity extends FragmentActivity implements
                             curURL.indexOf(HomeIndex + "?") != -1 || curURL.equals(HomeIndex)
                     ) {
 
-                Log.d("LM", "禁止返回上一页2：" + curURL);
+                Log.d("LM", "到达程序根节点后，点击安卓自带返回键，返回到桌面" + curURL);
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_MAIN);
+                intent.addCategory(Intent.CATEGORY_HOME);
+                startActivity(intent);
                 return false;
             }
             mWebView.goBack();
