@@ -389,7 +389,7 @@ public class MainActivity extends FragmentActivity implements
 
 
         boolean isExists = Tools.fileIsExists("/data/data/" + getPackageName() + "/upzip/dist/index.html");
-        if (lastVersion.equals(mAppVersion)) {
+        if (!lastVersion.equals("")) {
 
             Log.d("LM", "html已存在，无需解压");
         } else {
