@@ -1387,10 +1387,6 @@ public class MainActivity extends FragmentActivity implements
                     File file = Tools.getFileFromServer(downUrl, pd);
                     Log.d("LM", "Zip下载完毕，地址：" + file.getPath());
 
-                    // 更新ZIP版本号
-                    Tools.setAppZipVersion(mContext, CURR_ZIP_VERSION);
-                    Log.d("LM", "zip更新成功，设置版本号为：" + CURR_ZIP_VERSION);
-
                     Log.d("LM", "取出验证为：" + Tools.getAppZipVersion(mContext));
 
 
@@ -1398,6 +1394,9 @@ public class MainActivity extends FragmentActivity implements
                         Log.d("LM", "SD卡开始解压...");
                         Tools.UnZipFolder("/storage/emulated/0/dist.zip", unZipOutPath);
                         Log.d("LM", "SD卡完成解压...");
+                        // 更新ZIP版本号
+                        Tools.setAppZipVersion(mContext, CURR_ZIP_VERSION);
+                        Log.d("LM", "zip更新成功，设置版本号为：" + CURR_ZIP_VERSION);
                     } catch (Exception e) {
                         Log.d("LM", "SD卡解压异常..." + e.getMessage());
                         e.printStackTrace();
