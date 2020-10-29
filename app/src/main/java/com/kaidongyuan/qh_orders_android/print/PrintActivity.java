@@ -352,11 +352,249 @@ public class PrintActivity extends Activity implements View.OnClickListener {
         // 打印客户联
         if (id == R.id.btPrintCustom) {
 
-            printText("客户联");
+            if(dict.get("tenant_code").toString().equals("TYWL")){
 
-            printText("虚线");
+                printText_TY("存根联");
+                printText_TY("虚线");
+                printText_TY("客户联");
+                printText_TY("虚线");
+                printText_TY("回单联");
+            }else{
 
-            printText("回单联");
+                printText("客户联");
+                printText("虚线");
+                printText("回单联");
+            }
+        }
+    }
+
+
+
+    /*
+        打印文本
+        pos指令中并没有专门的打印文本的指令
+        但是，你发送过去的数据，如果不是打印机能识别的指令，满一行后，就可以自动打印了，或者加上OA换行，也能打印
+         */
+    private void printText_TY(final String CUSTOM_OR_RECEIPT) {
+
+        if (!ISCONNECT) {
+            Tools.showToastBottom(getString(R.string.connect_first), Toast.LENGTH_SHORT);
+            return;
+        }
+
+        try {
+            binder.writeDataByYouself(
+                    new UiExecute() {
+                        @Override
+                        public void onsucess() {
+
+                        }
+                        @Override
+                        public void onfailed() {
+
+                        }
+                    }, new ProcessData() {
+                        @Override
+                        public List<byte[]> processDataBeforeSend() {
+
+                            List<byte[]> list = new ArrayList<byte[]>();
+                            //创建一段我们想打印的文本,转换为byte[]类型，并添加到要发送的数据的集合list中
+
+                            //初始化打印机，清除缓存
+                            list.add(DataForSendToPrinterPos80.initializePrinter());
+
+                            if (CUSTOM_OR_RECEIPT.equals("虚线")) {
+
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                list.add(Tools.strTobytes("- - - - - - - - - - - - - - - - - - - - - - - -"));
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                return list;
+                            }
+
+                            // 客户联|回单联
+                            list.add(DataForSendToPrinterPos80.setAbsolutePrintPosition(200, 01));
+                            if (CUSTOM_OR_RECEIPT.equals("存根联")) {
+                                list.add(Tools.strTobytes("【存根联】"));
+                            } else if (CUSTOM_OR_RECEIPT.equals("客户联")) {
+                                list.add(Tools.strTobytes("【客户联】"));
+                            } else if (CUSTOM_OR_RECEIPT.equals("回单联")) {
+                                list.add(Tools.strTobytes("【回单联】"));
+                            }
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+
+                            // 抬头
+                            String header = dict.get("header").toString();
+                            // 订单号
+                            String orderNO = dict.get("order_no").toString();
+                            // 发货客户
+                            String conoCompany = dict.get("cono_company").toString();
+                            // 收货客户
+                            String coneCompany = dict.get("cone_company").toString();
+                            // 收货人电话
+                            String coneTel = dict.get("cone_tel").toString();
+                            // 收货地址
+                            String coneAddress = dict.get("cone_address").toString();
+
+                            Intent intent = getIntent();
+
+                            // 头部
+                            // 抬头 居中
+                            list.add(DataForSendToPrinterPos80.selectAlignment(1));
+                            list.add(DataForSendToPrinterPos80.selectCharacterSize(17));//字体放大一倍
+                            list.add(Tools.strTobytes(header));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            list.add(DataForSendToPrinterPos80.initializePrinter());
+                            list.add(DataForSendToPrinterPos80.selectAlignment(0));
+                            list.add(Tools.strTobytes("---------------------------------------------"));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+
+                            list.add(DataForSendToPrinterPos80.setAbsolutePrintPosition(00, 00));
+                            // 订单号 居左
+                            orderNO = "订 单 号：" + orderNO;
+                            list.add(Tools.strTobytes(orderNO));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            // 发货客户 居左
+                            conoCompany = "发货客户：" + conoCompany;
+                            list.add(Tools.strTobytes(conoCompany));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            // 收货客户 居左
+                            coneCompany = "收货客户：" + coneCompany;
+                            list.add(Tools.strTobytes(coneCompany));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            // 收货人 居左
+                            coneTel = "收 货 人：" + coneTel;
+                            list.add(Tools.strTobytes(coneTel));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            // 收货地址 居左
+                            coneAddress = "收货地址：" + coneAddress;
+                            list.add(Tools.strTobytes(coneAddress));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+
+
+                            list.add(Tools.strTobytes("---------------------------------------------"));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            // 商品格式说明 居左
+                            list.add(Tools.strTobytes("商品/数量/重量"));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            list.add(Tools.strTobytes("---------------------------------------------"));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            list.add(DataForSendToPrinterPos80.selectAlignment(0));
+
+                            org.json.simple.JSONArray product = (org.json.simple.JSONArray)dict.get("product");
+                            for (int i = 0; i < product.size(); i++) {
+
+                                org.json.simple.JSONObject p = (org.json.simple.JSONObject)product.get(i);
+                                String name = (i + 1) + "." + p.get("name").toString();
+                                // 产品名称太长，分两行
+                                String namePadPreix = name;
+                                String nameSuffix = "";
+
+                                // 数量占位符
+                                String qtyLoc = "abcdefgheijklnmopqrstuv";
+                                int nameLenght = Tools.textLength(namePadPreix);
+                                int pad = Tools.textLength(qtyLoc) - nameLenght;
+                                if (pad > 0) {
+                                    for (int j = 0; j < pad; j++) {
+                                        namePadPreix = namePadPreix + " ";
+                                    }
+                                }
+
+                                // 产品名称超过设置长度，自动换行
+                                if (pad < 0) {
+                                    int padPreix = 1;
+                                    for (int j = 0; j <= name.length(); j++) {
+                                        if (padPreix > 0) {
+                                            namePadPreix = name.substring(0, j);
+                                            int namePadPreixLenght = Tools.textLength(namePadPreix);
+                                            padPreix = Tools.textLength(qtyLoc) - namePadPreixLenght;
+                                        } else {
+                                            nameSuffix = name.substring(j - 1, name.length());
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                // 名称
+                                list.add(DataForSendToPrinterPos80.setAbsolutePrintPosition(00, 00));
+                                list.add(Tools.strTobytes(namePadPreix));
+
+                                // 数量
+                                String qty = "   " + Tools.oneDecimal(p.get("qty").toString()) + "[" + p.get("uom").toString() + "]";
+                                list.add(Tools.strTobytes(qty));
+
+                                // 重量
+                                String price = Tools.twoDecimal(p.get("weight").toString()) + "公斤";
+                                list.add(DataForSendToPrinterPos80.setAbsolutePrintPosition(200, 01));
+                                list.add(Tools.strTobytes(price));
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+
+                                if (pad < 0) {
+                                    // 名称(第二行)
+                                    list.add(DataForSendToPrinterPos80.setAbsolutePrintPosition(25, 00));
+                                    list.add(Tools.strTobytes(nameSuffix));
+                                    list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                }
+                                Log.d("LM", "processDataBeforeSend: ");
+                            }
+
+                            // 尾部
+                            // 总数量
+                            String totalQTY = dict.get("total_qty").toString();
+                            // 总重量
+                            String totalWeight = dict.get("total_weight").toString();
+                            // 订单类型
+                            String orderType = dict.get("order_type").toString();
+                            // 交货方式
+                            String deliveryWay = dict.get("delivery_way").toString();
+                            // 下单时间
+                            String ordDateAdd = dict.get("ord_date_add").toString();
+                            // 打印人
+                            String printPerson = dict.get("print_person").toString();
+
+                            list.add(DataForSendToPrinterPos80.selectAlignment(0));
+                            list.add(Tools.strTobytes("---------------------------------------------"));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            String total = "总 数 量：" + totalQTY + "     总重量：" + totalWeight + "公斤";
+                            list.add(Tools.strTobytes(total));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+
+                            // 订单类型
+                            orderType = "订单类型：" + orderType;
+                            list.add(Tools.strTobytes(orderType));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+
+                            // 交货方式
+                            deliveryWay = "交货方式：" + deliveryWay;
+                            list.add(Tools.strTobytes(deliveryWay));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+
+                            // 下单时间
+                            ordDateAdd = "下单时间：" + ordDateAdd;
+                            list.add(Tools.strTobytes(ordDateAdd));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+
+                            // 打印人
+                            printPerson = "打 印 人：" + printPerson;
+                            list.add(Tools.strTobytes(printPerson));
+                            list.add(DataForSendToPrinterPos80.printAndFeedLine());
+
+                            if (CUSTOM_OR_RECEIPT.equals("回单联")) {
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                list.add(Tools.strTobytes("客户签名："));
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                // 换行，不用手动走纸
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                            }
+                            return list;
+                        }
+                    });
+        } catch (Exception e) {
+
+            Tools.showToastBottom("打印异常：" + e.getMessage(), Toast.LENGTH_SHORT);
         }
     }
 
@@ -548,6 +786,11 @@ public class PrintActivity extends Activity implements View.OnClickListener {
                             if (CUSTOM_OR_RECEIPT.equals("回单联")) {
                                 list.add(DataForSendToPrinterPos80.printAndFeedLine());
                                 list.add(Tools.strTobytes("客户签名："));
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                // 换行，不用手动走纸
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
+                                list.add(DataForSendToPrinterPos80.printAndFeedLine());
                                 list.add(DataForSendToPrinterPos80.printAndFeedLine());
                             }
                             return list;
