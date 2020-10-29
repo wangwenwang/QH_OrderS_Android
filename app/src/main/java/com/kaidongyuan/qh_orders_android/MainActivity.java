@@ -138,7 +138,7 @@ public class MainActivity extends FragmentActivity implements
     private Uri mImageUri;
     private static final String FILE_PROVIDER_AUTHORITY = "com.kaidongyuan.qh_orders_android.fileprovider";
 
-    private String CURR_ZIP_VERSION = "0.0.1";
+    private String CURR_ZIP_VERSION = "0.6.4";
     private String WhoCheckVersion;
 
     //检测版本更新
