@@ -524,9 +524,9 @@ public class PrintActivity extends Activity implements View.OnClickListener {
                                 list.add(Tools.strTobytes(qty));
 
                                 // 重量
-                                String price = Tools.twoDecimal(p.get("weight").toString()) + "公斤";
+                                String weight = p.get("weight").toString();
                                 list.add(DataForSendToPrinterPos80.setAbsolutePrintPosition(200, 01));
-                                list.add(Tools.strTobytes(price));
+                                list.add(Tools.strTobytes(weight));
                                 list.add(DataForSendToPrinterPos80.printAndFeedLine());
 
                                 if (pad < 0) {
@@ -555,7 +555,7 @@ public class PrintActivity extends Activity implements View.OnClickListener {
                             list.add(DataForSendToPrinterPos80.selectAlignment(0));
                             list.add(Tools.strTobytes("---------------------------------------------"));
                             list.add(DataForSendToPrinterPos80.printAndFeedLine());
-                            String total = "总 数 量：" + totalQTY + "     总重量：" + totalWeight + "公斤";
+                            String total = "总 数 量：" + totalQTY + "     总重量：" + totalWeight;
                             list.add(Tools.strTobytes(total));
                             list.add(DataForSendToPrinterPos80.printAndFeedLine());
 
