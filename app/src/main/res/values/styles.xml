@@ -25,7 +25,7 @@
     <!-- 应用启动页(StartingWindow)的theme -->
     <style name="AppTheme.StartingWindowTheme" parent="AppTheme">
         <item name="android:windowFullscreen">true</item>
-        <item name="android:background">@drawable/launch_image</item>
+<!--        <item name="android:background">@drawable/launch_image</item>-->
     </style>
 
 </resources>

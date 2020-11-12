@@ -166,7 +166,7 @@ public class MainActivity extends FragmentActivity implements
         setContentView(R.layout.activity_main);
 
         final LinearLayout mainLayout = (LinearLayout)findViewById(R.id.launch_image);
-        mainLayout.setBackgroundResource(R.drawable.launch_image);
+//        mainLayout.setBackgroundResource(R.drawable.launch_image);
 
         // 修复targetSdkVersion为28时，拍照闪退问题
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
