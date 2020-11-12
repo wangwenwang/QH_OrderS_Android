@@ -40,6 +40,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.allenliu.versionchecklib.v2.AllenVersionChecker;
@@ -55,6 +56,7 @@ import com.baidu.mapapi.search.geocode.GeoCodeResult;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baoyz.actionsheet.ActionSheet;
+import com.kaidongyuan.qh_orders_android.Tools.AnimationUtils;
 import com.kaidongyuan.qh_orders_android.Tools.Constants;
 import com.kaidongyuan.qh_orders_android.Tools.DownPicUtil;
 import com.kaidongyuan.qh_orders_android.Tools.LocationApplication;
@@ -155,10 +157,16 @@ public class MainActivity extends FragmentActivity implements
     //声明AMapLocationClientOption对象
     public AMapLocationClientOption mLocationOption = null;
 
+    // vue已加载完成，关闭启动图
+    private Boolean launch_HIDDEN = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        final LinearLayout mainLayout = (LinearLayout)findViewById(R.id.launch_image);
+        mainLayout.setBackgroundResource(R.drawable.launch_image);
 
         // 修复targetSdkVersion为28时，拍照闪退问题
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -239,6 +247,25 @@ public class MainActivity extends FragmentActivity implements
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 Log.d("LM", "当前位置: " + url);
+
+                if(!launch_HIDDEN){
+                    launch_HIDDEN = true;
+                    new Thread() {
+                        public void run() {
+                            try {
+                                sleep(1500);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AnimationUtils.showAndHiddenAnimation(mainLayout, AnimationUtils.AnimationState.STATE_HIDDEN, 1000);
+                                }
+                            });
+                        }
+                    }.start();
+                }
             }
 
             public void onPageStarted(WebView view, String url, Bitmap favicon) {

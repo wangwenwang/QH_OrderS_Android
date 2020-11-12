@@ -148,6 +148,7 @@
 
         <activity
             android:name="com.kaidongyuan.qh_orders_android.MainActivity"
+            android:theme="@style/AppTheme.StartingWindowTheme"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait">
             <intent-filter>

@@ -15,4 +15,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"></WebView>
 
+    <LinearLayout
+        android:id="@+id/launch_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+    </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>
