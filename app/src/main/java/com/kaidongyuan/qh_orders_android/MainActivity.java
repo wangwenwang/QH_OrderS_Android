@@ -1145,6 +1145,26 @@ public class MainActivity extends FragmentActivity implements
                 String url = "javascript:P_C_D_F('" + p_c_d_f + "')";
                 MainActivity.mWebView.loadUrl(url);
             }
+            // 支付功能
+            else if(exceName.equals("支付宝支付")) {
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        Intent intent;
+                        try {
+                            String url = "alipays://platformapi/startapp?appId=20000067&url=" + inputName;
+                            intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                            intent.setComponent(null);
+                            mContext.startActivity(intent);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
         }
 
         @JavascriptInterface
