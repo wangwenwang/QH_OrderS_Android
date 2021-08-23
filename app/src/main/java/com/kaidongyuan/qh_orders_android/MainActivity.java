@@ -160,6 +160,8 @@ public class MainActivity extends FragmentActivity implements
     // vue已加载完成，关闭启动图
     private Boolean launch_HIDDEN = false;
 
+    private Uri photoUri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -564,25 +566,32 @@ public class MainActivity extends FragmentActivity implements
         takeCamera();
     }
 
+    //当前资源裁剪后保存的目标位置
+    private Uri getDestinationUri()  {
+        String fileName = String.format("fr_crop_%s.jpg", System.currentTimeMillis());
+        File cropFile = null;
+        try {
+            cropFile = File.createTempFile(fileName, "");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Uri.fromFile(cropFile);
+    }
+
     //拍照
     private void takeCamera() {
+
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-        if (hasSDCard()) {
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            String imageFileName = "JPEG_" + timeStamp + "_";
-            File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-            File imageFile;
-            try {
-
-                imageFile = File.createTempFile(imageFileName, ".jpg", storageDir);
-                cameraFielPath = imageFile.getPath();
-            } catch (IOException e) {
-
-                e.printStackTrace();
+        if (hasSDCard() && intent.resolveActivity(getPackageManager()) != null) {
+            photoUri = getDestinationUri();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // 适配Android 7.0文件权限，通过FileProvider创建一个content类型的Uri
+                photoUri = FileProvider.getUriForFile(this, "com.kaidongyuan.qh_orders_android.fileprovider", new File(photoUri.getPath()));
+            } else {
+                photoUri = getDestinationUri();
             }
-            File outputImage = new File(cameraFielPath);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(outputImage));
+            // android11以后强制分区存储，外部资源无法访问，所以添加一个输出保存位置，然后取值操作
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
             startActivityForResult(intent, FILE_CAMERA_RESULT_CODE);
         }
     }
@@ -771,17 +780,9 @@ public class MainActivity extends FragmentActivity implements
         Uri result = null;
         if (requestCode == FILE_CAMERA_RESULT_CODE) {
 
-            if (result == null && hasFile(cameraFielPath)) {
-
-                result = Uri.fromFile(new File(cameraFielPath));
-            }
-            if (uploadMessageAboveL != null) {
-
-                uploadMessageAboveL.onReceiveValue(new Uri[]{result});
-
-                uploadMessageAboveL = null;
+            if (photoUri != null) {
+                uploadMessageAboveL.onReceiveValue(new Uri[]{photoUri});
             } else if (uploadMessage != null) {
-
                 uploadMessage.onReceiveValue(result);
                 uploadMessage = null;
             }
